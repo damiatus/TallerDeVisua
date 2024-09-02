@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gráfico de Frecuencia de Edad 🌭🫠</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+          rel="stylesheet">
+
+    <style>
+        .texto {
+            font-size: 20px;
+            font-family: "Montserrat", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 600;
+            font-style: normal;
+        }
+
+        .h1_texto {
+            font-size: 40px;
+            font-family: "Montserrat", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 600;
+            font-style: normal;
+        }
+    </style>
+</head>
+<body>
+<h1 class="h1_texto">
+    Carreras
+</h1>
+<svg width="1100" height="700"></svg>
+
+<script type="application/javascript">
+
+    d3.csv("data.csv")
+
+        .then(function (response) {
+            console.log(response)
+            graficar(response)
+        })
+
+
+    function graficar(data) {
+
+        const data_length = data.length
+
+        d3.select("svg").selectAll("rect")
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("height", 100)
+            .attr("with", function (d) {
+                return d.frecuencia * 25;
+            })
+            .attr("y", function (d, i) {
+                return 10;
+            })
+            .attr("x", function (d) {
+                return 100;
+            })
+            .style("fill", function (d) {
+                if (d.frecuencia >= 10) {
+                    return "red"
+                } else {
+                    return "#561255";
+                }
+            })
+
+        d3.select("svg")
+            .selectAll("text")
+            .data(data)
+            .enter()
+            .append("text")
+            .attr("class", "texto")
+            .text(function (d) {
+                return d.frecuencia
+            })
+            .attr("text-anchor", "middle")
+            .attr("y", function (d, i) {
+                return 100 + i * (100 + 1) + 100 / 2;
+            })
+            .attr("x", function (d, i) {
+                return 600 - d.frecuencia * 25 - 10;
+            })
+
+
+        // linea vertical der
+        d3.select("svg")
+            .append("line")
+            .attr("x1", 200)
+            .attr("y1", 100)
+            .attr("x2", 200)
+            .attr("y2", 600)
+            .attr("stroke", "black")
+    }
+
+</script>
+</body>
+</html>

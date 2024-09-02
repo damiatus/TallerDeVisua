@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>D3.js - AP 02</title>
+    <meta charset="utf-8"/>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .tick line {
+            opacity: 0.1;
+        }
+    </style>
+</head>
+<body>
+
+<div id="viz">
+    <svg width="800" height="800"></svg>
+</div>
+
+<script type="text/javascript">
+
+    // valores que uso más abajo
+    const width = 700, height = 700, padding = 100;
+
+    // eje X
+    let xScale = d3.scaleLinear()
+        .domain([-4, 4]).range([width - padding, padding]);
+    let xAxis = d3.axisBottom().scale(xScale);
+    let xPlot = d3.select("svg")
+        .append("g")
+        .attr("id", "xAxisG")
+        .attr("transform", "translate(0," + (height / 2) + ")")
+        .call(xAxis);
+
+    // eje Y
+    let yScale = d3.scaleLinear().domain([-4, 4])
+        .range([height - padding, padding]);
+    let yAxis = d3.axisLeft().scale(yScale);
+    let yPlot = d3.select("svg")
+        .append("g")
+        .attr("id", "yAxisG")
+        .attr("transform", "translate(" + (width / 2) + ",0)")
+        .call(yAxis);
+
+    //creamos la data
+    let array_data_polares = [];
+    let array_data_cartesianas = []
+
+    // se generan los puntos a graficar
+    for (let i = 0; i <= 4; i = i + 0.01) {
+        array_data_polares.push({theta: i * 2 * Math.PI, r: r(i * 2 * Math.PI)})
+    }
+
+    // pasamos los theta-r a x-y
+    array_data_polares.forEach(function (d) {
+        array_data_cartesianas.push({x: d.r * Math.cos(d.theta), y: d.r * Math.sin(d.theta)})
+    })
+
+    // función que genera el gráfico
+    lineChart(array_data_cartesianas);
+
+    /**
+     * Calcula un valor basado en el argumento "theta".
+     *
+     * @param {number} theta - El valor de entrada en radianes.
+     * @returns {number} - El valor calculado basado en la función matemática.
+     */
+    function r(theta) {
+        return Math.exp(Math.sin(theta)) - 2 * Math.cos(4 * theta) + Math.pow(Math.sin((2 * theta - Math.PI) / 24), 5)
+    }
+
+    /**
+     * Dibuja un gráfico de línea y un área sombreada basados en los datos proporcionados.
+     *
+     * @param {Object[]} data - Los datos para el gráfico.
+     * @param {number} data[].x - Valor en el eje X.
+     * @param {number} data[].y - Valor en el eje Y.
+     * @returns {void}
+     */
+    function lineChart(data) {
+
+        // linea
+        let line = d3.line()
+            .x(function (d) {
+                return xScale(d.x)
+            })
+            .y(function (d) {
+                return yScale(d.y)
+            })
+            .curve(d3.curveBasis);
+
+        // como siempre, aquí es donde realmente se dibuja
+        d3.select("svg")
+            .append("path")
+            .attr("d", line(data))
+            .attr("fill", "none")
+            .attr("stroke", "pink")
+            .attr("stroke-width", 5);
+
+        // ahora similar a linea, podemos usar area
+        let area = d3.area()
+            .x(d => xScale(d.x))
+            .y0(d => yScale(d.y))
+            .y1(() => yScale(0))
+            .curve(d3.curveBasis);
+
+        // aquí se dibuja
+        d3.select("svg")
+            .append("path")
+            .style("id", "Area")
+            .attr("d", area(data))
+            .attr("fill", "#f15fd0")
+            .attr("stroke", "#c01f9c")
+            .attr("stroke-width", 2)
+            .style("stroke-opacity", .75)
+            .style("fill-opacity", .5)
+
+        d3.select("#Area")
+            .transition()
+            .duration(1000)
+            .attr("fill", d3.interpolateInferno(Math.random()))
+    }
+
+</script>
+</body>
+</html>

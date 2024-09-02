@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gráfico de Frecuencia de Edad 🌭🫠</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+          rel="stylesheet">
+    <!-- legendas -->
+
+    <style>
+        .texto {
+            font-size: 20px;
+            font-family: "Montserrat", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 600;
+            font-style: normal;
+        }
+
+        .h1_texto {
+            font-size: 40px;
+            font-family: "Montserrat", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 600;
+            font-style: normal;
+        }
+    </style>
+</head>
+<body>
+<h1 class="h1_texto">
+    AP1: Angelo León y Damián De Aguiar
+</h1>
+<p></p>
+<svg width="1300" height="700"></svg>
+
+<script type="application/javascript">
+
+    d3.csv("data.csv")
+
+        .then(function (response) {
+            console.log(response)
+            graficar(response)
+        })
+
+
+    function graficar(data) {
+
+        const data_length = data.length
+
+        d3.select("svg")
+            .append("line")
+            .attr("x1", 510)
+            .attr("y1", 80)
+            .attr("x2", 510)
+            .attr("y2", 550)
+            .attr("stroke", "grey")
+
+        d3.select("svg")
+            .append("line")
+            .attr("x1", 660)
+            .attr("y1", 80)
+            .attr("x2", 660)
+            .attr("y2", 550)
+            .attr("stroke", "grey")
+
+        d3.select("svg")
+            .append("line")
+            .attr("x1", 810)
+            .attr("y1", 80)
+            .attr("x2", 810)
+            .attr("y2", 550)
+            .attr("stroke", "grey")
+        d3.select("svg")
+            .append("line")
+            .attr("x1", 960)
+            .attr("y1", 80)
+            .attr("x2", 960)
+            .attr("y2", 550)
+            .attr("stroke", "grey")
+
+
+        d3.select("svg").selectAll("rect")
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("height", 40)
+            .attr("width", function (d) {
+                return d.frecuencia * 25;
+            })
+            .attr("y", function (d, i) {
+                return 100 + i * (100 + 1);
+            })
+            .attr("x", function (d) {
+                return 360;
+            })
+            .style("fill", function (d) {
+                if (d.frecuencia >= 10) {
+                    return "red"
+                } else {
+                    return "#007AFF";
+                }
+            })
+
+        // Números de frec
+        d3.select("svg")
+            .selectAll("text")
+            .data(data)
+            .enter()
+            .append("text")
+            .attr("class", "texto")
+            .text(function (d) {
+                return d.frecuencia
+            })
+            .attr("text-anchor", "middle")
+            .attr("x", function (d) {
+                return 348 + d.frecuencia * 25;
+            })
+            .attr("y", function (d, i) {
+                return 125 + i * (100 + 1);
+            })
+            .style('fill', 'white')
+            .attr("text-anchor", "middle")
+
+
+        // Textos de carreras
+
+        d3.select("svg")
+            .selectAll("text .label")
+            .data(data)
+            .enter()
+            .append("text")
+            .attr("class", "texto")
+            .text(function (d, i) {
+                return d.carrera
+            })
+            .attr("text-anchor", "end")
+
+            .attr("x", function (d) {
+                return 340;
+            })
+            .attr("y", function (d, i) {
+                return 120 + i * (100 + 1);
+            })
+
+
+        // Titulo
+
+        d3.select("svg")
+            .append("text")
+            .text("Carreras")
+            .attr("class", "texto")
+            .attr("x", 360)
+            .attr("y", 70)
+            .attr("text-anchor", "middle")
+            .style("font-size", "30px");
+
+        // linea vertical der
+        d3.select("svg")
+            .append("line")
+            .attr("x1", 360)
+            .attr("y1", 80)
+            .attr("x2", 360)
+            .attr("y2", 550)
+            .attr("stroke", "black")
+
+
+    }
+
+    // linea vertical der
+
+
+</script>
+<style type="text/css">
+    p {
+        color: red;
+        font-size: 2rem;
+        font-family: Montserrat;
+        font-weight: bold;
+        border-top: 0
+    }
+</style>
+<p>Mira un completo:</p>
+<img src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Completo_italiano.jpg" alt="Foto de un completo"
+     width="400px">
+
+</body>
+</html>

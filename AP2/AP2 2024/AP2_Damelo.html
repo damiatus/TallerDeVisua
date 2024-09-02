@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>D3.js - AP 02</title>
+    <meta charset="utf-8"/>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .tick line {
+            opacity: 0.1;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.24.0/d3-legend.js"></script>
+</head>
+<body>
+<h1 class="h1_texto">
+    AP2: Angelo León y Damián De Aguiar
+</h1>
+
+<div id="viz">
+    <svg width="500" height="500"></svg>
+</div>
+
+
+<script type="text/javascript">
+
+    // valores que uso más abajo
+    const width = 550, height = 550, padding = 100;
+
+    // eje X
+    let xScale = d3.scaleLinear()
+        .domain([-4, 4]).range([width - padding, padding]);
+    let xAxis = d3.axisBottom().scale(xScale);
+    let xPlot = d3.select("svg")
+        .append("g", "f")
+        .attr("id", "xAxisG")
+        .attr("transform", "translate(0," + (height / 2) + ")")
+        .call(xAxis);
+
+    // eje Y
+    let yScale = d3.scaleLinear().domain([-4, 4])
+        .range([height - padding, padding]);
+    let yAxis = d3.axisLeft().scale(yScale);
+    let yPlot = d3.select("svg")
+        .append("g", "f")
+        .attr("id", "yAxisG")
+        .attr("transform", "translate(" + (width / 2) + ",0)")
+        .call(yAxis);
+
+    //creamos la data
+
+    let array_data_f = []
+    let array_data_g = []
+
+
+
+    //F(x)
+    for (let i = -2; i <= 2; i = i + 0.01) {
+        array_data_f.push({x:i, y:f(i)})
+    }
+
+  //  G(X)
+    for (let i = -2; i <= 2; i = i + 0.01) {
+        array_data_g.push({x:i, y:g(i)})
+    }
+
+    // pasamos los theta-r a x-y
+ //  array_data_polares.forEach(function (d) {
+ //       array_data_cartesianas.push({x: d.r * Math.cos(d.theta), y: d.r * Math.sin(d.theta)})
+ //   })
+
+    // función que genera el gráfico
+    lineChart(array_data_g);
+    lineChart(array_data_f);
+
+
+
+    function f(x) {
+        return Math.sqrt(1 - Math.pow(Math.abs(x) - 1, 2));
+    }
+
+    function g(x) {
+        return -3 * Math.sqrt(1 - Math.sqrt(Math.abs(x) / 2 ));
+    }
+
+    /**
+     * Dibuja un gráfico de línea y un área sombreada basados en los datos proporcionados.
+     *
+     * @param {Object[]} data - Los datos para el gráfico.
+     * @param {number} data[].x - Valor en el eje X.
+     * @param {number} data[].y - Valor en el eje Y.
+     * @returns {void}
+     */
+    function lineChart(data) {
+
+        // linea
+        let line = d3.line()
+            .x(function (d) {
+                return xScale(d.x)
+            })
+            .y(function (d) {
+                return yScale(d.y)
+            })
+            .curve(d3.curveBasis);
+
+        // como siempre, aquí es donde realmente se dibuja
+        d3.select("svg")
+            .append("path")
+            .attr("d", line(data))
+            .attr("fill", "none")
+            .attr("stroke", "pink")
+            .attr("stroke-width", 5);
+
+        // ahora similar a linea, podemos usar area
+        let area = d3.area()
+            .x(d => xScale(d.x))
+            .y0(d => yScale(d.y))
+            .y1(() => yScale(0))
+            .curve(d3.curveBasis);
+
+        // aquí se dibuja
+        d3.select("svg")
+            .append("path")
+            .style("id", "Area")
+            .attr("d", area(data))
+            .attr("fill", "#f15fd0")
+            .attr("stroke", "#c01f9c")
+            .attr("stroke-width", 2)
+            .style("stroke-opacity", .75)
+            .style("fill-opacity", .5)
+
+
+        d3.select("#Area")
+            .transition()
+            .duration(1000)
+            .attr("fill", d3.interpolateInferno(Math.random()))
+    }
+    function drawLegends() {
+
+        //usamos el plugin legend
+        let fillScale = d3.scaleOrdinal()
+            .domain(["Completo"])
+            .range(["#75739F", "red", blue])
+
+        let legendA = d3.legendColor().scale(fillScale)
+
+        d3.select("svg")
+            .append("x")
+            .attr("id", "grupo_legendas")
+            .style("font-size", '20px') //tiene prioridad sobre el estilo que pueda tener una clase
+            .attr("transform", "translate(800, 100)")
+            .style("font-family", "Libre Caslon Text")
+            .call(legendA)
+
+
+    }
+
+
+</script>
+<style type="text/css">
+    p {
+        color: red;
+        font-size: 2rem;
+        font-family: Montserrat;
+        font-weight: bold;
+        border-top: 0
+    }
+</style>
+<p> ¿Sabes qué es mejor que un corazón?
+    Un completo:</p>
+<img src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Completo_italiano.jpg" alt="Foto de un completo"
+     width="400px">
+</body>
+</html>
