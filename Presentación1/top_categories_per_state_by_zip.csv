@@ -1,0 +1,102 @@
+state,category,count
+AL,American,601
+AL,Burgers,228
+AL,Fast Food,192
+AR,American,15
+AR,Burgers,8
+AR,Comfort Food,7
+AZ,Coffee and Tea,1
+AZ,Desserts,1
+CA,Convenience,4
+CA,Everyday Essentials,4
+CA,Pharmacy,4
+CT,Convenience,4
+CT,Everyday Essentials,4
+CT,Pharmacy,4
+FL,Convenience,2
+FL,Everyday Essentials,2
+FL,Pharmacy,2
+GA,Sandwich,2
+GA,pizza,2
+GA,American,1
+ID,American,12
+ID,Burgers,6
+ID,Fast Food,5
+IL,American,98
+IL,Burgers,49
+IL,Sandwiches,42
+IN,Convenience,1
+IN,Everyday Essentials,1
+IN,Family Meals,1
+KS,American,1
+KS,Burgers,1
+KS,Convenience,1
+MA,Convenience,1
+MA,Everyday Essentials,1
+MA,Pharmacy,1
+MD,American,260
+MD,Asian,159
+MD,Healthy,121
+MN,American,23
+MN,Sandwich,10
+MN,Sandwiches,10
+MO,Bakery,2
+MO,Cafe,2
+MO,Comfort Food,2
+MT,Convenience,1
+MT,Everyday Essentials,1
+MT,Pharmacy,1
+NE,Convenience,1
+NE,Everyday Essentials,1
+NE,Pharmacy,1
+NH,Convenience,5
+NH,Everyday Essentials,5
+NH,Pharmacy,5
+NJ,Allergy Friendly,1
+NJ,American,1
+NJ,Asian,1
+NM,Asian,1
+NM,Asian Fusion,1
+NM,Thai,1
+NY,Convenience,5
+NY,Everyday Essentials,5
+NY,Pharmacy,5
+OH,American,15
+OH,Burgers,9
+OH,Desserts,5
+OR,American,357
+OR,Asian,183
+OR,Burgers,159
+PA,Convenience,3
+PA,Everyday Essentials,3
+PA,Pharmacy,3
+SC,Convenience,2
+SC,Everyday Essentials,2
+SC,Pharmacy,2
+TN,American,31
+TN,Fast Food,20
+TN,Sandwich,14
+TX,American,12860
+TX,Burgers,5307
+TX,Mexican,4129
+UT,American,1416
+UT,Fast Food,626
+UT,Burgers,474
+VA,American,4159
+VA,Fast Food,1634
+VA,Sandwich,1467
+VT,American,212
+VT,Burgers,98
+VT,Sandwiches,90
+WA,American,3228
+WA,Asian,1206
+WA,Fast Food,1180
+WI,American,2502
+WI,Burgers,1228
+WI,Sandwiches,996
+WV,American,903
+WV,Fast Food,354
+WV,Burgers,317
+WY,American,205
+WY,Burgers,100
+WY,Sandwiches,72

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <title>Restaurant Categories in Uber Eats</title>
+   <script src="https://d3js.org/d3.v6.min.js"></script>
+   <style>
+      .category-label {
+         font-size: 10px;
+         font-weight: bold;
+         text-anchor: middle;
+      }
+
+      .bubble {
+         fill-opacity: 0.6;
+      }
+   </style>
+</head>
+
+<body>
+   <svg width="960" height="600"></svg>
+
+   <script>
+      // Dimensiones del SVG
+      const width = 960;
+      const height = 600;
+
+      // Cargar el mapa de EE.UU.
+      const svg = d3.select("svg");
+
+      const projection = d3.geoAlbersUsa()
+         .scale(1000)
+         .translate([width / 2, height / 2]);
+
+      const path = d3.geoPath().projection(projection);
+
+      // Cargar y dibujar el mapa
+      d3.json("https://d3js.org/us-10m.v1.json").then(function (us) {
+         svg.append("g")
+            .attr("class", "states")
+            .selectAll("path")
+            .data(topojson.feature(us, us.objects.states).features)
+            .enter().append("path")
+            .attr("d", path)
+            .attr("fill", "#cccccc")
+            .attr("stroke", "#ffffff");
+
+         // Cargar los datos de categorías más comunes por estado
+         d3.csv("top_categories_per_state_by_zip.csv").then(function (data) {
+            // Cargar y proyectar los puntos en el mapa
+            data.forEach(d => {
+               d.lat = +d.lat;
+               d.lng = +d.lng;
+               d.coords = projection([d.lng, d.lat]);
+            });
+
+            // Dibujar círculos para representar las categorías más comunes
+            svg.selectAll(".bubble")
+               .data(data)
+               .enter().append("circle")
+               .attr("class", "bubble")
+               .attr("cx", d => d.coords ? d.coords[0] : null)
+               .attr("cy", d => d.coords ? d.coords[1] : null)
+               .attr("r", d => Math.sqrt(d.count) * 2) // Radio según la cantidad
+               .attr("fill", d => {
+                  if (d.category === 'Burgers') return "red";
+                  if (d.category === 'Pizza') return "blue";
+                  if (d.category === 'Coffee') return "green";
+                  return "orange";
+               })
+               .attr("stroke", "#333");
+
+            // Añadir etiquetas de categorías
+            svg.selectAll(".category-label")
+               .data(data)
+               .enter().append("text")
+               .attr("class", "category-label")
+               .attr("x", d => d.coords ? d.coords[0] : null)
+               .attr("y", d => d.coords ? d.coords[1] - 10 : null)
+               .text(d => d.category);
+         });
+      });
+   </script>
+</body>
+
+</html>
