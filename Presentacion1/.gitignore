@@ -1,4 +1,3 @@
 
 # Editor directories and files
-restaurant-menus.csv
-restaurants.csv
+*.csv
