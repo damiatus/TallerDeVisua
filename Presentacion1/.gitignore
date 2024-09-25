@@ -1,3 +1,5 @@
 
 # Editor directories and files
 *.csv
+!fastfood_data_clean_conLogos.csv
+!CadenasCleanConLogos.csv
