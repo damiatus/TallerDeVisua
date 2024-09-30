@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>D3.js - Visualización Presentación 1</title>
+    <meta charset="utf-8"/>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet"> <!-- Fuente Open Sans -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0; /* Elimina márgenes por defecto */
+            position: relative; /* Permite el posicionamiento absoluto de los SVGs */
+            height: 100vh; /* Asegura que el cuerpo tenga la altura completa de la ventana */
+            font-family: 'Open Sans', sans-serif; /* Aplica Open Sans a todo el cuerpo */
+        }
+        h1 {
+            text-align: left; /* Alinea el texto del título a la izquierda */
+            font-size: 30px; /* Tamaño de fuente para el título */
+            margin-top: 20px; /* Espacio superior */
+            font-weight: 600; /* Texto en negrita */
+            margin-left: 75px; /* Desplaza el título 75px a la derecha */
+        }
+        #logos {
+            position: absolute; /* Posicionamiento absoluto */
+            top: 50px; /* Ajustado 50px más abajo desde 100px a 150px */
+            left: 0; /* Desde la izquierda */
+            width: 800px; /* Ancho del SVG */
+            height: 800px; /* Alto del SVG */
+        }
+        #info {
+            position: absolute; /* Posicionamiento absoluto */
+            top: 50px; /* Ajustado 50px más abajo desde 0px a 50px */
+            left: 800px; /* A la derecha del SVG logos */
+            width: 700px; /* Ancho del SVG */
+            height: 300px; /* Alto del SVG */
+            border: 2px solid black; /* Contorno negro de 2px */
+            box-sizing: border-box; /* Incluye el borde en el tamaño total */
+            background-color: #ffeb3b; /* Fondo amarillo (color de tarjeta) */
+            padding: 10px; /* Espacio interior para que el contenido no toque los bordes */
+            border-radius: 10px; /* Bordes redondeados como una tarjeta */
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2); /* Sombra suave para dar efecto de elevación */
+        }
+
+        #piechart {
+            position: absolute; /* Posicionamiento absoluto */
+            top: 350px; /* Ajustado 50px más abajo desde 300px a 350px */
+            left: 800px; /* A la derecha de logos */
+            width: 700px; /* Ancho del SVG */
+            height: 500px; /* Alto del SVG */
+        }
+
+        /* Ajustes de imagen */
+        .flag {
+            vertical-align: middle; /* Alinea la bandera con el texto */
+            width: 40px; /* Ancho de la bandera */
+            height: auto; /* Ajusta la altura proporcionalmente */
+        }
+    </style>
+</head>
+<body>
+<h1>Top 15 cadenas de comida rápida con más locales en EE.UU <img src="https://upload.wikimedia.org/wikipedia/en/a/a4/Flag_of_the_United_States.svg" alt="Bandera de EE.UU" class="flag"></h1>
+<svg id="logos"></svg>
+<svg id="info"></svg>
+<svg id="piechart"></svg>
+<script src="Vis1.js"></script>
+</body>
+</html>
+
+
+
