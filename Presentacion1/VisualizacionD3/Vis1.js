@@ -215,3 +215,4 @@ d3.csv("CadenasCleanConLogos.csv")
     .catch(function (error) {
         console.error('Error al cargar el archivo CSV:', error);
     });
+

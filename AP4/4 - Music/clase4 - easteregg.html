@@ -1,0 +1,301 @@
+<!doctype html>
+<!--suppress JSUnusedGlobalSymbols, JSUnresolvedVariable, JSUnresolvedFunction -->
+<html lang="es">
+<head>
+    <title>D3.js - Music</title>
+    <meta charset="utf-8"/>
+
+    <!--	d3 😍-->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <script type="text/javascript" src="https://unpkg.com/meyda@5.2.2/dist/web/meyda.min.js"></script>
+
+    <!-- esto es lo que se ve junto al titulo en el tab-->
+    <link rel="icon" href="../assets/favicon.ico" type="image/x-icon">
+
+    <!-- fuente de Google-->
+    <link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+       /*  Propiedads en común par las imagenes */
+        img { 
+            height: 300px;
+            position: absolute;
+        }
+
+        #wrapper {
+            text-align: center;
+            top: 50%;
+            width: 100%;
+            position: absolute;
+        }
+
+        #lyrics {
+            background-color: white;
+            font-family: 'Poppins', sans-serif;
+            opacity: 0.9;
+            display: inline-block;
+            font-size: 30px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+<!-- Importa las imaeges -->
+<img src="images/Takemichi.webp" alt="takemichi" id="takemichi" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+
+
+
+<div id="wrapper">
+    <div id="lyrics">
+        ...
+    </div>
+</div>
+
+
+<script>
+
+    // array que contiene la lista de caciones
+    let songs = [
+        'sumika-fiction',
+        'cry-baby',
+        'aot',
+        'digimon'
+    ]
+
+    // seleccionamos la cancion que vamos a usar
+    let currentSong = songs[2]
+
+    //https://www.bignerdranch.com/blog/music-visualization-with-d3-js/
+    //https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API
+    // se crea el elemento de audio (barra de prograos y control de múscia de la esquina)
+    d3.select("body")
+        .append("audio")
+        .attr('controls', true) // esto son los controles que da el navegador por defecto.
+        .attr("id", "audioElement")
+        .attr("src", 'songs/' + currentSong + ".mp3")
+        .style('position', "absolute")
+        .style('top', "10px")
+        .style('left', "10px")
+
+    //guardamos el elemento donde está el audio
+    // const audioElement = document.querySelector("#audioElement"); //Otra forma de llamarlo con codigo js nativo
+    const audioElement = d3.select("#audioElement").node(); //seleccionamos el eduiElement. La seleccion tradicional de d3 no es naiva de js y necesitamos una que si lo sea, por eso lo hacemos con node
+
+    //https://developer.mozilla.org/es/docs/Web/API/AudioContext
+    //audio context nos sirve para procesar el audio en diferntes navegadores
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    //indicamos la fuente para audioContext, tiene que ser un elemento del DOM
+    const audioSrc = audioContext.createMediaElementSource(audioElement);
+
+    //sirve para tener el tiempo y la frecuencia mientras se reproduce la música
+    const analyser = audioContext.createAnalyser();
+
+
+    // Vincula nuestro analizador a la fuente.
+    audioSrc.connect(analyser);
+    audioSrc.connect(audioContext.destination);
+
+    //https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/Objetos_globales/Uint8Array
+    //representan un array de enteros sin signo de 8 bit (10 barras en este caso)
+    const frequencyData = new Uint8Array(12);
+    // const frequencyData = new Uint8Array(analyser.frequencyBinCount); //traería todos los elementos
+
+    // -----------------Creamos las barras----------------------//
+//creamos el svg
+    const svgHeight = window.screen.height - 200;
+    const svgWidth = window.innerWidth; //obtenemos el ancho de la pantalla
+    const svg = d3.select("body")
+        .append('svg')
+        .attr('height', svgHeight)
+        .attr('width', svgWidth)
+        .style("position", "absolute")
+        .style("top", 0)
+        .style("left", 0)
+        .style("z-index", -1);
+
+    // creamos 3 escalas lineales que serán usadas posteriomente
+    const frequencyScale = d3.scaleLinear()
+        .domain([0, 255])
+        .range([0, svgHeight / 6]); // Ajustamos el rango para crecimiento de los cuadrados
+
+    //Escalas de color que van de 0 a 1 
+    const colorScaleTwo = d3.scaleLinear().domain([0, 255]).range([0, 1]);
+
+    // Posición del centro del círculo (iguala la posición de la imagen)
+    const centerX = svgWidth / 2;
+    const centerY = svgHeight / 2;
+
+    // Radio del círculo (reducido para que los cuadrados aparezcan en pantalla)
+    const radius = Math.min(svgWidth, svgHeight) / 5; // Radio más pequeño
+
+    //inicialmente la data son solo ceros para crear los elementos
+    svg.selectAll('rect')
+        .data(frequencyData)
+        .enter() //crea elementos 
+        .append('rect') //añade cuadrados igual a la cantidad de elementos que podría tener frequencyData
+        //Proporciones de los cuadrados:
+        .attr('x', function (d, i) {
+            const angle = (i / frequencyData.length) * 2 * Math.PI; // Calcula el ángulo
+            return centerX + radius * Math.cos(angle); // Coordenada x en el círculo
+        })
+        .attr('y', function (d, i) {
+            const angle = (i / frequencyData.length) * 2 * Math.PI; // Calcula el ángulo
+            return centerY + radius * Math.sin(angle); // Coordenada y en el círculo
+        })
+        .attr('width', function () {
+            return 10; // Tamaño inicial del cuadrado (ajustable)
+        })
+        .attr('height', function () {
+            return 10; // Tamaño inicial del cuadrado (ajustable)
+        })
+        .attr('transform', function (d, i) {
+            // Centrar el cuadrado en su posición calculada
+            const angle = (i / frequencyData.length) * 360;
+            const angleInRadians = (i / frequencyData.length) * 2 * Math.PI;
+            const x = centerX + radius * Math.cos(angleInRadians);
+            const y = centerY + radius * Math.sin(angleInRadians);
+            return `translate(${x - 5}, ${y - 5})`; // -5 para centrar el cuadrado de 10x10 en su posición
+        })
+        .style('fill', function (d) {
+            return d3.interpolateCubehelixDefault(colorScaleTwo(d));
+        });
+
+    //creamos la función que actualiza los cuadrados
+    function renderChart() {
+
+        //obtenemos la frecuencia y se la damos al array
+        analyser.getByteFrequencyData(frequencyData);
+
+        //actualizamos los valores de los cuadrados
+        svg.selectAll('rect')
+            .data(frequencyData)
+            .attr('width', function (d) {
+                const size = frequencyScale(d / 2); // Crece uniformemente en ambas direcciones
+                return size;
+            })
+            .attr('height', function (d) {
+                const size = frequencyScale(d / 2); // Crece uniformemente en ambas direcciones
+                return size;
+            })
+            .attr('transform', function (d, i) {
+                // Recalcular las posiciones para que los cuadrados se mantengan centrados mientras crecen
+                const angleInRadians = (i / frequencyData.length) * 2 * Math.PI;
+                const x = centerX + radius * Math.cos(angleInRadians);
+                const y = centerY + radius * Math.sin(angleInRadians);
+                const size = frequencyScale(d / 2); // Tamaño del cuadrado
+                return `translate(${x - size / 2}, ${y - size / 2})`; // Centramos el cuadrado en su nueva posición
+            })
+            .style('fill', function (d) {
+                return d3.interpolateCubehelixDefault(colorScaleTwo(d)); // Color basado en frecuencia
+            });
+    }
+
+    //hacemos que se ejecute esta función de manera continua
+    d3.timer(renderChart);
+
+    /* ---------------------------Creamos las lyrics------------------------ */
+    /*
+    *** Ahora vemos los lyrics :)
+    */
+
+    // leemos el archivo lrc
+    let arrayLyrics = []
+    d3.text('lyrics/' + currentSong + '.lrc')
+        .then(function (rawData) { //rawData es un string que tiene literalmente toda la informacón del .lrc
+
+            //hacemos un split por línea del archivo
+            rawData.split(/\r?\n/).forEach(function (d) {
+
+                let split = d.split(']') //dividimos los elementos de los corchetes para quitarlos
+                if (split.length > 1 && split[1].length > 0) {
+
+                    //calculamos el tiempo en el que deberia aparecer
+                    let tempTime = split[0].substring(1).split(":")
+                    let realTime = parseFloat(tempTime[1]) + parseInt(tempTime[0]) * 60
+
+                    // esto es lo que realmente usaremos del archivo
+                    arrayLyrics.push({time: realTime, lyric: split[1]})
+                }
+            })
+        })
+        .catch(function (e) {
+            console.log(e)
+        })
+
+    // hacemos que la posicion del div que tiene las lyrics quede centrado
+    d3.select('#wrapper')
+        .style('top', svgBottom / 2 - d3.select('#wrapper').node().offsetHeight / 2 + "px")
+
+    // añadiremos funciones cuando se le de play y pause a la canción
+    d3.select("#audioElement")
+        .on("play", play)
+        .on("pause", pause);
+
+    // timers guardará todos los eventos en los que cambia la letra que se muestra
+    let timers = []
+
+    // esta variables nos servirá para guardar en que momento de la cancion estamos
+    // sirve para el momento NO inicial
+    let currentTime = 0
+
+    // esta funcion creará los eventos que mostraran las letras
+    function play() {
+        currentTime = audioSrc.mediaElement.currentTime * 1000
+        arrayLyrics.forEach(function (d) {
+
+            if (d.time >= audioSrc.mediaElement.currentTime) { //Verifica que el tiempo en qu debe ir esa frase es igual o mayr al tiempo de repoducción en el que va la canción
+                timers.push(
+                    d3.timer(function () {
+                        d3.select('#lyrics')
+                            .html(d.lyric)
+                    }, d.time * 1000 - currentTime)
+                )
+            }
+        })
+    }
+
+    // con esto borramos todos los eventos que tenemos en timers
+    function pause() {
+        timers.forEach(function (d) {
+            d.stop()
+        })
+        timers = []
+    }
+
+
+    /*
+    ***--------------- Meyda 👀---------------------------
+    */
+
+    //https://meyda.js.org/audio-features
+    if (typeof Meyda === "undefined") {
+        console.log("Meyda could not be found! Have you included it?");
+    } else {
+        const analyzer = Meyda.createMeydaAnalyzer({
+            audioContext: audioContext,
+            source: audioSrc,
+            bufferSize: 512 * 2 * 4,
+            featureExtractors: ["rms"],
+            callback: (features) => {
+                d3.select('body')
+                    .transition()
+                    .duration(100)
+                    .style(
+                        'background-color',
+                        d3.interpolateRgb.gamma(2.2)("#fff1f2", "#ffa4bd")(colorScale(features.rms))
+                    )
+            },
+        });
+        analyzer.start();
+    }
+
+
+</script>
+</body>
+</html>
