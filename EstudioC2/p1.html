@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Visualización de Onda de Música</title>
+   <script src="https://d3js.org/d3.v7.min.js"></script>
+   <style>
+      .bar {
+         fill: steelblue;
+      }
+   </style>
+</head>
+
+<body>
+   <input type="file" id="fileInput" accept="audio/mp3">
+   <svg width="800" height="400"></svg>
+
+   <script>
+        const svg = d3.select("svg");
+        const width = +svg.attr("width");
+        const height = +svg.attr("height");
+
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                audioContext.decodeAudioData(e.target.result, function(buffer) {
+                    const source = audioContext.createBufferSource();
+                    source.buffer = buffer;
+
+                    const analyser = audioContext.createAnalyser();
+                    source.connect(analyser);
+                    analyser.connect(audioContext.destination);
+
+                    source.start(0);
+
+                    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+                    function draw() {
+                        analyser.getByteFrequencyData(dataArray);
+                        svg.selectAll("*").remove(); // Limpiar el SVG
+
+                        const barWidth = width / dataArray.length;
+
+                        svg.selectAll(".bar")
+                            .data(dataArray)
+                            .enter().append("rect")
+                            .attr("class", "bar")
+                            .attr("x", (d, i) => i * barWidth)
+                            .attr("y", d => height - d)
+                            .attr("width", barWidth - 1)
+                            .attr("height", d => d);
+
+                        requestAnimationFrame(draw);
+                    }
+
+                    draw();
+                });
+            };
+
+            reader.readAsArrayBuffer(file);
+        });
+   </script>
+</body>
+
+</html>
