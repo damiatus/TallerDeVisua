@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>D3.js - Visualización Presentación 1</title>
+    <meta charset="utf-8" />
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Fuente Open Sans -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            position: relative;
+            height: 100vh;
+            font-family: 'Open Sans', sans-serif;
+        }
+
+        h1 {
+            text-align: left;
+            font-size: 30px;
+            margin-top: 20px;
+            font-weight: 600;
+            margin-left: 75px;
+        }
+
+        #logos {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 800px;
+            height: 800px;
+        }
+
+        #info {
+            position: absolute;
+            top: 700px;
+            left: 50px;
+            width: 700px;
+            height: 350px;
+            border: 2px solid black;
+            background-color: #ffeb3b;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        #piechart {
+            position: absolute;
+            top: 550px;
+            left: 900px;
+            width: 700px;
+            height: 400px;
+        }
+
+        #us-map {
+            position: absolute;
+            top: 0;
+            left: 900px;
+            width: 700px;
+            height: 500px;
+        }
+
+        .flag {
+            vertical-align: middle;
+            width: 40px;
+            height: auto;
+        }
+
+        #info-button {
+            position: absolute;
+            top: 1010px;
+            left: 50px;
+        }
+
+        .info-button {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .info-button:hover {
+            background-color: #0056b3;
+        }
+        #gif-container {
+        position: absolute;
+        top: 1010px;
+        left: 800px;
+        width: 400px;
+        height: 300px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        }
+
+        .gif-image {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 10px;
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Top 15 cadenas de comida rápida con más locales en EE.UU <img
+            src="https://upload.wikimedia.org/wikipedia/en/a/a4/Flag_of_the_United_States.svg" alt="Bandera de EE.UU"
+            class="flag"></h1>
+
+    <!-- SVGs para las visualizaciones -->
+    <svg id="logos" width="800" height="800"></svg>
+    <svg id="info" width="700" height="350"></svg>
+    <svg id="piechart" width="700" height="500"></svg>
+    <svg id="us-map" width="800" height="600"></svg>
+
+    <!-- Contenedor del botón dinámico -->
+    <div id="info-button"></div>
+
+    <!-- Contenedor para el GIF -->
+    <div id="gif-container">
+        <img id="gif-image" class="gif-image" src="" alt="GIF de la cadena">
+    </div>
+
+    <script src="Vis1.js"></script>
+</body>
+
+</html>
