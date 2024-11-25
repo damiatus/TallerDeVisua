@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <title>D3.js - Music</title>
+    <meta charset="utf-8" />
+
+    <!-- Cargamos D3.js para trabajar con visualizaciones de datos -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <!-- Cargamos Meyda para la extracción de características de audio -->
+    <script type="text/javascript" src="https://unpkg.com/meyda@5.2.2/dist/web/meyda.min.js"></script>
+
+    <!-- Icono que aparece en la pestaña del navegador -->
+    <link rel="icon" href="../assets/favicon.ico" type="image/x-icon">
+
+    <!-- Fuente personalizada de Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet">
+
+    <style>
+        /* Ajusta los márgenes y el padding para que no haya espacio en el documento */
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Propiedades comunes para las imágenes */
+        img {
+            height: 300px;
+            position: absolute;
+        }
+
+        /* Centra el div principal */
+        #wrapper {
+            text-align: center;
+            top: 50%;
+            width: 100%;
+            position: absolute;
+        }
+
+        /* Estilo del contenedor de las letras */
+        #lyrics {
+            background-color: white;
+            font-family: 'Poppins', sans-serif;
+            opacity: 0.9;
+            display: inline-block;
+            font-size: 30px;
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Imágenes de los personajes -->
+    <img src="images/hanako.png" alt="hanako" id="hanako" style="left: 12%; top: 0; transform: rotate(30deg);">
+    <img src="images/kabakura.png" alt="kabakura" id="kabakura"
+        style="left: 12%; bottom: 5%; transform: rotate(-30deg)">
+    <img src="images/hirotaka.png" alt="hirotaka" id="hirotaka"
+        style="right: 12%; top: 0; transform: scaleX(-1) rotate(30deg)">
+    <img src="images/narumi.png" alt="narumi" id="narumi" style="right: 12%; bottom: 5%; transform: rotate(30deg);">
+
+    <!-- Contenedor para las letras de las canciones -->
+    <div id="wrapper">
+        <div id="lyrics">
+            ...
+        </div>
+    </div>
+
+    <script>
+        // Lista de canciones disponibles
+        let songs = [
+            'sumika-fiction',
+            'cry-baby',
+            'aot',
+            'digimon'
+        ];
+
+        // Seleccionamos la canción inicial
+        let currentSong = songs[0];
+
+        // Añadimos un elemento de audio para reproducir música
+        d3.select("body")
+            .append("audio")
+            .attr('controls', true) // Activa los controles básicos del navegador
+            .attr("id", "audioElement") // Asigna un ID para referencia
+            .attr("src", 'songs/' + currentSong + ".mp3") // Ruta del archivo de audio
+            .style('position', "absolute") // Posición en la esquina superior izquierda
+            .style('top', "10px")
+            .style('left', "10px");
+
+        // Seleccionamos el elemento de audio
+        const audioElement = d3.select("#audioElement").node(); //Si tu selección contiene múltiples elementos, .node() te devuelve el primer elemento de la selección.
+
+        // Creamos un contexto de audio para manejar el procesamiento
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Conectamos el audio al contexto
+        const audioSrc = audioContext.createMediaElementSource(audioElement);
+
+        // Creamos un analizador para obtener datos de frecuencia
+        const analyser = audioContext.createAnalyser();
+
+        // Conectamos el analizador al audio
+        audioSrc.connect(analyser);
+        audioSrc.connect(audioContext.destination);
+
+        // Creamos un arreglo para almacenar los datos de frecuencia
+        const frequencyData = new Uint8Array(10);
+
+        // Configuramos el SVG que contendrá las barras de visualización
+        const svgHeight = window.screen.height - 200;
+        const svgWidth = window.innerWidth;
+        const svg = d3.select("body")
+            .append('svg')
+            .attr('height', svgHeight)
+            .attr('width', svgWidth)
+            .style("position", "absolute")
+            .style("top", 0)
+            .style("left", 0)
+            .style("z-index", -1);
+
+        // Escalas para las barras y colores
+        const frequencyScale = d3.scaleLinear()
+            .domain([0, 255])
+            .range([0, svgHeight]);
+
+        const colorScale = d3.scaleLinear().domain([0, 0.25]).range([0, 1]);
+        const colorScaleTwo = d3.scaleLinear().domain([0, 255]).range([0, 1]);
+
+        // Espaciado entre barras
+        const barPadding = 10;
+
+        // Inicializamos las barras en el SVG
+        svg.selectAll('rect')
+            .data(frequencyData)
+            .enter()
+            .append('rect')
+            .attr('x', (d, i) => i * (svgWidth / frequencyData.length) + barPadding)
+            .attr('width', () => {
+                const ancho = (svgWidth / frequencyData.length) - barPadding;
+                return ancho < 0 ? 10 : ancho;
+            });
+
+        // Función que actualiza las barras basándose en los datos de frecuencia
+        function renderChart() {
+            analyser.getByteFrequencyData(frequencyData);
+            svg.selectAll('rect')
+                .data(frequencyData)
+                .attr('y', d => svgHeight / 2 - d / 2)
+                .attr('height', d => frequencyScale(d / 2))
+                .style('fill', d => d3.interpolateCubehelixDefault(colorScaleTwo(d)));
+        }
+
+        // Llama continuamente a la función renderChart para actualizar la visualización
+        d3.timer(renderChart);
+
+        // Lógica para mostrar letras sincronizadas con la música
+        let arrayLyrics = [];
+        d3.text('lyrics/' + currentSong + '.lrc')
+            .then(rawData => {
+                rawData.split(/\r?\n/).forEach(line => {
+                    let split = line.split(']');
+                    if (split.length > 1 && split[1].length > 0) {
+                        let tempTime = split[0].substring(1).split(":");
+                        let realTime = parseFloat(tempTime[1]) + parseInt(tempTime[0]) * 60;
+                        arrayLyrics.push({ time: realTime, lyric: split[1] });
+                    }
+                });
+            })
+            .catch(console.log);
+
+        // Centra el contenedor de letras en la pantalla
+        d3.select('#wrapper')
+            .style('top', svgHeight / 2 - d3.select('#wrapper').node().offsetHeight / 2 + "px");
+
+        // Funciones para manejar el estado de reproducción/pausa
+        d3.select("#audioElement")
+            .on("play", play)
+            .on("pause", pause);
+
+        let timers = [];
+        let currentTime = 0;
+
+        function play() {
+            currentTime = audioSrc.mediaElement.currentTime * 1000;
+            arrayLyrics.forEach(d => {
+                if (d.time >= audioSrc.mediaElement.currentTime) {
+                    timers.push(
+                        d3.timer(() => {
+                            d3.select('#lyrics').html(d.lyric);
+                        }, d.time * 1000 - currentTime)
+                    );
+                }
+            });
+        }
+
+        function pause() {
+            timers.forEach(timer => timer.stop());
+            timers = [];
+        }
+
+        // Meyda para cambiar el fondo basado en RMS
+        if (typeof Meyda === "undefined") {
+            console.log("Meyda could not be found! Have you included it?");
+        } else {
+            const analyzer = Meyda.createMeydaAnalyzer({
+                audioContext: audioContext,
+                source: audioSrc,
+                bufferSize: 512 * 2 * 4,
+                featureExtractors: ["rms"],
+                callback: features => {
+                    d3.select('body')
+                        .transition()
+                        .duration(100)
+                        .style(
+                            'background-color',
+                            d3.interpolateRgb.gamma(2.2)("#fff1f2", "#ffa4bd")(colorScale(features.rms))
+                        );
+                },
+            });
+            analyzer.start();
+        }
+    </script>
+</body>
+
+</html>

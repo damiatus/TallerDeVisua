@@ -1,0 +1,284 @@
+<!doctype html>
+<!--suppress JSUnusedGlobalSymbols, JSUnresolvedVariable, JSUnresolvedFunction -->
+<html lang="es">
+
+<head>
+    <title>D3.js - Music</title>
+    <meta charset="utf-8" />
+
+    <!-- Cargando la biblioteca D3.js para visualizaciones interactivas -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <!-- Cargando la biblioteca Meyda para análisis de audio -->
+    <script type="text/javascript" src="https://unpkg.com/meyda@5.2.2/dist/web/meyda.min.js"></script>
+
+    <!-- El siguiente código es para cambiar el ícono que aparece en la pestaña del navegador. Actualmente está comentado -->
+    <!--<link rel="icon" href="../assets/favicon.ico" type="image/x-icon">-->
+
+    <!-- Importando fuente de Google Fonts llamada Poppins -->
+    <link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet">
+
+    <style>
+        /* Aquí se puede cambiar el margen y relleno de todo el cuerpo de la página */
+        body {
+            margin: 0;
+            /* Personalizar margen de la página */
+            padding: 0;
+            /* Personalizar relleno de la página */
+        }
+
+        /* Imagen */
+        img {
+            height: 300px;
+            /* Personalizar tamaño de la imagen */
+            position: absolute;
+        }
+
+        /* Wrapper donde se centra todo */
+        #wrapper {
+            text-align: center;
+            /* Personalizar la alineación del texto */
+            top: 50%;
+            width: 100%;
+            position: absolute;
+        }
+
+        /* Estilo para el div que contiene las letras */
+        #lyrics {
+            background-color: white;
+            /* Personalizar el color de fondo */
+            font-family: 'Poppins', sans-serif;
+            /* Cambiar fuente aquí */
+            opacity: 0.9;
+            /* Se puede ajustar la transparencia */
+            display: inline-block;
+            font-size: 30px;
+            /* Ajustar tamaño de la fuente */
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Contenedor para las letras -->
+    <div id="wrapper">
+        <div id="lyrics">
+            ...
+        </div>
+    </div>
+
+    <script>
+
+        // Variable para saber si la música está sonando
+        let isPlaying = false;
+
+        // Lista de canciones disponibles
+        let songs = [
+            'sumika-fiction',
+            'cry-baby',
+            'aot',
+            'digimon'
+        ];
+
+        // Canción que se va a reproducir por defecto
+        let currentSong = songs[0];
+
+        // Crear un elemento de audio con los controles y la fuente de la canción actual
+        d3.select("body")
+            .append("audio")
+            .attr('controls', true) // Control estándar de audio
+            .attr("id", "audioElement")
+            .attr("src", 'songs/' + currentSong + ".mp3") // Fuente del audio
+            .style('position', "absolute") // Estilo: posición absoluta
+            .style('top', "10px")
+            .style('left', "10px");
+
+        // Obtener el elemento de audio para poder interactuar con él
+        const audioElement = d3.select("#audioElement").node();
+
+        let audioContext = null;
+        let audioSrc = null;
+        let analyser = null;
+
+        // Inicialización del contexto de audio
+        function initAudioContext() {
+            if (!audioContext) {
+
+                // Crear contexto de audio, necesario para procesar el sonido
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+                // Crear fuente de audio desde el elemento de audio
+                audioSrc = audioContext.createMediaElementSource(audioElement);
+
+                // Crear un analizador para poder obtener datos sobre la señal de audio
+                analyser = audioContext.createAnalyser();
+
+                // Conectar la fuente de audio al analizador y al destino (altavoces)
+                audioSrc.connect(analyser);
+                audioSrc.connect(audioContext.destination);
+            } else if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        }
+
+        // Iniciar cuando el usuario interactúa (hace play)
+        audioElement.addEventListener('play', () => {
+            initAudioContext();
+
+            /*
+            *** Meyda 👀
+            */
+            if (typeof Meyda === "undefined") {
+                console.log("Meyda could not be found! Have you included it?");
+            } else {
+                const analyzer = Meyda.createMeydaAnalyzer({
+                    audioContext: audioContext,
+                    source: audioSrc,
+                    bufferSize: 512 * 2 * 4, // Tamaño del buffer de datos
+                    featureExtractors: ["rms"], // Extraemos la energía RMS del audio
+                    callback: (features) => {
+                        d3.select('body')
+                            .transition()
+                            .duration(100)
+                            .style(
+                                'background-color',
+                                d3.interpolateRgb.gamma(2.2)("#fff1f2", "#ffa4bd")(colorScale(features.rms)) // Cambiar el color de fondo según la energía RMS
+                            );
+                    },
+                });
+                analyzer.start();
+            }
+        }, { once: true });
+
+        // Crear array para almacenar datos de frecuencias
+        const frequencyData = new Uint8Array(50); // Array de frecuencias (se puede modificar el tamaño)
+
+        // Crear un SVG que servirá como contenedor de las visualizaciones
+        const svgHeight = window.innerHeight;
+        const svgWidth = window.innerWidth;
+        const svg = d3.select("body")
+            .append('svg')
+            .attr('height', svgHeight)
+            .attr('width', svgWidth)
+            .style("position", "absolute")
+            .style("top", 0)
+            .style("left", 0)
+            .style("z-index", -1);
+
+        // Escalas para la visualización de frecuencias
+        const frequencyScale = d3.scalePow()
+            .exponent(1.5)
+            .domain([0, 255])
+            .range([0, svgHeight / 1.75]); // Personalizar el rango de las frecuencias
+        const colorScale = d3.scaleLinear().domain([0, 0.25]).range([0, 1]);
+        const colorScaleTwo = d3.scaleLinear().domain([0, 255]).range([0, 1]);
+
+        // Separación entre las barras visualizadas
+        const barPadding = 10; // Ajustar según sea necesario
+
+        // Inicializar el gráfico con valores por defecto
+        /*svg.selectAll('rect') 
+            .data(frequencyData)
+            .enter()
+            .append('rect')
+            .attr('x', function (d, i) {
+                return i * (svgWidth / frequencyData.length) + barPadding;
+            })
+            .attr('width', function () {
+                const ancho = (svgWidth / frequencyData.length) - barPadding;
+                return ancho < 0 ? 10 : ancho;
+            });
+    
+        svg.selectAll('circle')
+            .data(frequencyData)
+            .enter()
+            .append('circle')
+            .attr('cx', function (d, i) {
+                return i * (svgWidth / frequencyData.length) + (svgWidth / frequencyData.length) / 2 + barPadding / 2;
+            })
+            .attr('cy', function () {
+                return svgHeight / 2;
+            })
+            .attr('r', 5);*/
+
+        // Crear un grupo para la línea base del gráfico
+        const lineGroup = svg.append('g');
+
+        // Añadir la línea base
+        lineGroup.append('path')
+            .attr('class', 'min-max-line')
+            .attr('stroke', '#000000') // Color de la línea
+            .attr('stroke-width', 3)
+            .attr('fill', 'none')
+            .attr('d', `M0,${svgHeight / 2}L${svgWidth},${svgHeight / 2}`); // Líneas horizontales en el centro
+
+        let lineGenerator = d3.line()
+            .x(d => d.x)
+            .y(d => d.y)
+            .curve(d3.curveMonotoneX);
+
+        // Array de puntos para la línea
+        let linePoints = [];
+
+        // Función para renderizar las visualizaciones
+        function renderChart() {
+            if (!isPlaying || !analyser) return;
+
+            // Obtener datos de frecuencia y actualizarlos
+            analyser.getByteFrequencyData(frequencyData);
+
+            // Actualizar las barras con las frecuencias
+            svg.selectAll('rect')
+                .data(frequencyData)
+                .attr('y', function (d) {
+                    return svgHeight / 2 - frequencyScale(d) / 2;
+                })
+                .attr('height', function (d) {
+                    return frequencyScale(d);
+                })
+                .style('fill', function (d) {
+                    return d3.interpolateCubehelixDefault(colorScaleTwo(d)); // Cambiar color según frecuencia
+                });
+
+            linePoints = [];
+
+            // Generar puntos para la línea
+            for (let i = 0; i <= frequencyData.length / 2; i++) {
+                const x = i * (svgWidth / frequencyData.length) + (svgWidth / frequencyData.length) / 2 + barPadding / 2;
+
+                if (i % 2 === 0) {
+                    linePoints.push({
+                        x: x,
+                        y: svgHeight / 2 + frequencyScale(frequencyData[i])
+                    });
+                } else {
+                    linePoints.push({
+                        x: x,
+                        y: svgHeight / 2 - frequencyScale(frequencyData[i])
+                    });
+                }
+            }
+
+            // Actualizar la visualización de la línea
+            lineGroup.selectAll('.line')
+                .data([linePoints])
+                .join(
+                    enter => enter.append('path').attr('class', 'line'),
+                    update => update,
+                    exit => exit.remove()
+                )
+                .attr('stroke', '#fffa') // Color de la línea
+                .attr('stroke-width', 1)
+                .attr('fill', 'none')
+                .attr('d', lineGenerator); // Definir la forma de la línea
+
+            requestAnimationFrame(renderChart); // Llamar a la función repetidamente para actualizar el gráfico
+        }
+
+        // Ejecutar el renderizado al comenzar la canción
+        renderChart();
+    </script>
+</body>
+
+</html>
